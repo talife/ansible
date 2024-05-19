@@ -1,0 +1,10 @@
+---
+# tasks file for pre-nvim
+- name: Include Ubuntu var
+  include_vars: main.yml
+
+- name: Install pre-requisites
+  become: true
+  ansible.builtin.apt:
+    name: "{{ pre_nvim_packages | list }}"
+    state: present

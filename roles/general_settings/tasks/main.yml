@@ -1,0 +1,39 @@
+---
+# tasks file for pre-nvim
+- name: Include var
+  include_vars: main.yml
+
+- name: get 'HOME'
+  ansible.builtin.set_fact:
+    local_home: "{{ lookup('env', 'HOME') }}"
+
+- name: git folder is there
+  ansible.builtin.file:
+    path: "{{ local_home }}/{{ git_folder }}"
+    state: directory
+
+- name: install folder is there
+  ansible.builtin.file:
+    path: "{{ local_home }}/install"
+    state: directory
+
+- name: Install pre-requisites
+  become: true
+  ansible.builtin.apt:
+    name: "{{ installation | list }}"
+    state: present
+
+- name: Check if ohmyzsh exist
+  stat:
+    path: "{{ local_home }}/.oh-my-zsh"
+  register: file_stat
+
+- name: download ohmyzsh
+  get_url:
+    url: https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh
+    dest: "{{ local_home }}/install/ohmyzsh.sh"
+    mode: 0755
+
+- name: install ohmyzsh
+  command: "{{ local_home }}/install/ohmyzsh.sh"
+  when: not file_stat.stat.exists
