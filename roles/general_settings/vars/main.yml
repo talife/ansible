@@ -1,0 +1,20 @@
+---
+# vars file for pre-nvim
+git_folder: "git"
+
+installation:
+  - zsh
+  - awesome
+  - ripgrep
+  - fzf
+  - g++
+  - gcc
+  - make
+  - open-vm-tools
+  - open-vm-tools-desktop
+  - tmux
+  - xclip
+  - terminator
+  - golang
+  - stow
+  - fonts-powerline

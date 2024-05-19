@@ -1,0 +1,9 @@
+---
+# vars file for pre-nvim
+pre_nvim_packages:
+  - ninja-build
+  - gettext
+  - cmake
+  - unzip
+  - curl
+  - build-essential
