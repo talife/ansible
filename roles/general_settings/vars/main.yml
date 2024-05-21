@@ -4,6 +4,7 @@ git_folder: "git"
 
 installation:
   - zsh
+  - dbus-x11
   - awesome
   - ripgrep
   - fzf
