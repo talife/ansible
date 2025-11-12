@@ -7,3 +7,4 @@ pre_nvim_packages:
   - unzip
   - curl
   - build-essential
+  - luarocks
