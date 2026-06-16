@@ -1,39 +1,86 @@
 ---
-# tasks file for pre-nvim
+# tasks file for general_settings
 - name: Include var
-  include_vars: main.yml
+  ansible.builtin.include_vars: main.yml
 
-- name: get 'HOME'
+- name: Get HOME and USER facts
   ansible.builtin.set_fact:
     local_home: "{{ lookup('env', 'HOME') }}"
+    local_user: "{{ lookup('env', 'USER') }}"
 
-- name: git folder is there
+- name: Git folder is there
   ansible.builtin.file:
     path: "{{ local_home }}/{{ git_folder }}"
     state: directory
+    mode: '0755'
 
-- name: install folder is there
+- name: Install folder is there
   ansible.builtin.file:
     path: "{{ local_home }}/install"
     state: directory
+    mode: '0755'
 
 - name: Install pre-requisites
   become: true
   ansible.builtin.apt:
     name: "{{ installation | list }}"
     state: present
+    update_cache: yes
 
-- name: Check if ohmyzsh exist
-  stat:
+- name: Set Zsh as the default shell for the current user
+  become: true
+  ansible.builtin.user:
+    name: "{{ local_user }}"
+    shell: /usr/bin/zsh
+
+- name: Check if Oh My Zsh exists
+  ansible.builtin.stat:
     path: "{{ local_home }}/.oh-my-zsh"
-  register: file_stat
+  register: ohmyzsh_stat
 
-- name: download ohmyzsh
-  get_url:
+- name: Download Oh My Zsh installer
+  ansible.builtin.get_url:
     url: https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh
     dest: "{{ local_home }}/install/ohmyzsh.sh"
-    mode: 0755
+    mode: '0755'
+  when: not ohmyzsh_stat.stat.exists
 
-- name: install ohmyzsh
-  command: "{{ local_home }}/install/ohmyzsh.sh"
-  when: not file_stat.stat.exists
+- name: Install Oh My Zsh (unattended)
+  ansible.builtin.command:
+    cmd: "{{ local_home }}/install/ohmyzsh.sh --unattended"
+    creates: "{{ local_home }}/.oh-my-zsh"
+  environment:
+    KEEP_ZSHRC: "yes"
+  when: not ohmyzsh_stat.stat.exists
+
+- name: Install Tmux Plugin Manager (TPM)
+  ansible.builtin.git:
+    repo: https://github.com/tmux-plugins/tpm
+    dest: "{{ local_home }}/.tmux/plugins/tpm"
+    version: master
+    depth: 1
+    update: no
+
+- name: Ensure manual catppuccin plugin directory exists
+  ansible.builtin.file:
+    path: "{{ local_home }}/.config/tmux/plugins/catppuccin"
+    state: directory
+    mode: '0755'
+
+- name: Clone Catppuccin tmux plugin (manual install method)
+  ansible.builtin.git:
+    repo: https://github.com/catppuccin/tmux.git
+    dest: "{{ local_home }}/.config/tmux/plugins/catppuccin/tmux"
+    version: v2.3.0
+    depth: 1
+    update: no
+
+- name: Check if TPM plugins are installed
+  ansible.builtin.stat:
+    path: "{{ local_home }}/.tmux/plugins/tmux-sensible"
+  register: tpm_plugins_stat
+
+- name: Install TPM plugins
+  ansible.builtin.command:
+    cmd: "{{ local_home }}/.tmux/plugins/tpm/bin/install_plugins"
+  when: not tpm_plugins_stat.stat.exists
