@@ -8,3 +8,8 @@
   ansible.builtin.apt:
     name: "{{ pre_nvim_packages | list }}"
     state: present
+
+- name: Install tree-sitter-cli via Cargo
+  ansible.builtin.command: cargo install tree-sitter-cli
+  args:
+    creates: ~/.cargo/bin/tree-sitter
