@@ -84,3 +84,9 @@
   ansible.builtin.command:
     cmd: "{{ local_home }}/.tmux/plugins/tpm/bin/install_plugins"
   when: not tpm_plugins_stat.stat.exists
+
+- name: Ensure kube-ps1 is installed for Zsh prompt
+  ansible.builtin.git:
+    repo: 'https://github.com/jonmosco/kube-ps1.git'
+    dest: "{{ local_home }}/.local/share/kube-ps1"
+    version: master
