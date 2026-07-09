@@ -19,3 +19,4 @@ installation:
   - golang
   - stow
   - fonts-powerline
+  - locales

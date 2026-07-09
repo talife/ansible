@@ -13,3 +13,30 @@
   ansible.builtin.command: cargo install tree-sitter-cli
   args:
     creates: ~/.cargo/bin/tree-sitter
+
+- name: Check if Neovim is already installed
+  ansible.builtin.stat:
+    path: /usr/local/bin/nvim
+  register: nvim_stat
+
+- name: Clone Neovim repository at latest stable release
+  ansible.builtin.git:
+    repo: https://github.com/neovim/neovim.git
+    dest: "{{ lookup('env', 'HOME') }}/git/neovim"
+    version: stable
+    depth: 1
+    force: yes
+  register: nvim_repo
+
+- name: Build Neovim from source (only if repo updated or nvim missing)
+  ansible.builtin.command:
+    cmd: make CMAKE_BUILD_TYPE=RelWithDebInfo
+    chdir: "{{ lookup('env', 'HOME') }}/git/neovim"
+  when: nvim_repo.changed or not nvim_stat.stat.exists
+
+- name: Install compiled Neovim binary to system
+  become: true
+  ansible.builtin.command:
+    cmd: make install
+    chdir: "{{ lookup('env', 'HOME') }}/git/neovim"
+  when: nvim_repo.changed or not nvim_stat.stat.exists
